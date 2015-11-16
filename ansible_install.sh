@@ -1,14 +1,4 @@
 #!/bin/sh
-#TODO.md
-yum_makecache_retry() {
-  tries=0
-  until [ $tries -ge 5 ]
-  do
-    yum makecache && break
-    let tries++
-    sleep 1
-  done
-}
 
 if [ "x$KITCHEN_LOG" = "xDEBUG" -o "x$OMNIBUS_ANSIBLE_LOG" = "xDEBUG" ]; then
   export PS4='(${BASH_SOURCE}:${LINENO}): - [${SHLVL},${BASH_SUBSHELL},$?] $ '
@@ -17,21 +7,6 @@ fi
 
 if [ ! $(which ansible-playbook) ]; then
   if [ -f /etc/centos-release ] || [ -f /etc/redhat-release ] || [ -f /etc/oracle-release ] || [ -f /etc/system-release ] || grep -q 'Amazon Linux' /etc/system-release; then
-
-    # Install required Python libs and pip
-    # Fix EPEL Metalink SSL error
-    # - workaround: https://community.hpcloud.com/article/centos-63-instance-giving-cannot-retrieve-metalink-repository-epel-error
-    # - SSL secure solution: Update ca-certs!!
-    #   - http://stackoverflow.com/q/26734777/645491#27667111
-    #   - http://serverfault.com/q/637549/77156
-    #   - http://unix.stackexchange.com/a/163368/7688
-    yum -y install ca-certificates nss
-    yum clean all
-    rm -rf /var/cache/yum
-    yum_makecache_retry
-    yum -y install epel-release
-    # One more time with EPEL to avoid failures
-    yum_makecache_retry
 
     yum -y install python-pip PyYAML python-jinja2 python-httplib2 python-keyczar python-paramiko git
     # If python-pip install failed and setuptools exists, try that
